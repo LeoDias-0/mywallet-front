@@ -16,33 +16,20 @@ export default () => {
     const { setUser } = useContext(UserContext)
     const history = useHistory()
 
-    const signIn = async () => {
+    const signIn = () => {
         if (password !== confirmPassword) {
             alert('Digite a mesma senha nos campos abaixo!')
             return
         }
 
-        const response = await postSignIn(name, email, password)
+        postSignIn(name, email, password).then(res => {
 
-        // TODO: testar
-
-        if (response.status >= 300) {
+            history.push('/login-in')
+        }).catch(res => {
+            console.log(res)
             alert('Não foi possível efetuar o cadastro, atualize a página e tente novamente!')
             return
-        }
-        const { token } = response.body
-
-        setUser({
-            name: name,
-            token: token
         })
-
-        localStorage.setItem('name', name)
-        localStorage.setItem('token', token)
-        localStorage.setItem('email', email)
-        localStorage.setItem('password', password)
-
-        history.push('/')
     }
 
     return (
@@ -67,7 +54,7 @@ export default () => {
                 value={confirmPassword}
                 type={'password'}
                 onChange={e => setConfirmPassword(e.target.value)} />
-            <CenteredButton onClick={signIn} text={'Cadastrar'} to={'/'} />
+            <CenteredButton onClick={signIn} text={'Cadastrar'} />
             <NoShapeButton text={'Já tem uma conta? Entre agora!'} to={'/login-in'}/>
         </Background>
     )

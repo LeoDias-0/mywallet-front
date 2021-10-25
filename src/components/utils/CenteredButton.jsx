@@ -1,7 +1,8 @@
 import styled from 'styled-components'
 import { Link } from 'react-router-dom'
+import { useEffect } from 'react'
 
-const ContainerButton = styled(Link)`
+const ContainerButton = styled.button`
     height: 46px;
     background-color: #A328D6;
     border-radius: 5px;
@@ -20,9 +21,9 @@ const ContainerButton = styled(Link)`
     text-decoration: none;
 `
 
-export default ({ text, to }) => {
+export default ({ onClick, text, to }) => {
     return (
-        <ContainerButton to={to}>
+        <ContainerButton onClick={onClick}>
             {text}
         </ContainerButton>
     )

@@ -1,6 +1,9 @@
 import styled from 'styled-components'
 import { RiLogoutBoxRLine } from 'react-icons/ri'
 import { Link } from 'react-router-dom'
+import { useContext } from 'react'
+import UserContext from '../contexts/UserContext'
+import { logout } from '../../services/services'
 
 const ContainerTopBar = styled.div`
     width: 100%;
@@ -21,13 +24,20 @@ const ContainerUserName = styled.div`
 
 
 export default ({ userName }) => {
+    const { user } = useContext(UserContext)
+
+    const handleLogout = () => {
+        logout()
+        localStorage.clear()
+    }
+
     return (
         <ContainerTopBar>
             <ContainerUserName>
                 Olá, {userName}
             </ContainerUserName>
             <Link to='/login-in' style={{color: '#FFFFFF'}}>
-                <RiLogoutBoxRLine size={24}/>
+                <RiLogoutBoxRLine size={24} onClick={handleLogout}/>
             </Link>
         </ContainerTopBar>
     )

@@ -1,5 +1,9 @@
+import { useEffect, useState, useContext, useCallback } from 'react'
 import styled from 'styled-components'
 import Register from './Register'
+import { getRegisters } from '../../services/services'
+import UserContext from '../contexts/UserContext'
+import { useHistory } from 'react-router'
 
 const Container = styled.div`
     width: 100%;
@@ -57,17 +61,28 @@ const BalanceValue = styled.div`
 `
 
 export default () => {
+    const [balance, setBalance] = useState(0)
+    const [registers, setRegisters] = useState([])
+    const history = useHistory()
 
-    const balance = '523.47'
+    const { user } = useContext(UserContext)
 
-    const registers = [
-        {date: '15/02', description: 'blabla alsad', value: '52.48', isIncome: true},
-        {date: '30/02', description: 'outra descrição', value: '102.48', isIncome: false}
-    ]
+    useEffect(() => {
+        getRegisters(user.token).then(res => {
+
+            let sum = 0
+            res.data.rows.map(a => sum += Number(a))
+            setBalance(sum.toFixed(2))
+            setRegisters(res.data.rows.map(a => Number(a).toFixed(2)))
+        }).catch(res => {
+            console.log(res)
+        })
+    }, [registers])
+
 
     return (
         <Container registers={registers} >
-            {registers ?
+            {registers.length > 0 ?
                 registers.map((item, index) => <Register
                     key={index}
                     date={item.date}

@@ -11,7 +11,8 @@ import { useState } from 'react'
 export default () => {
     const [user, setUser] = useState({
         name: localStorage.getItem('name') || '',
-        token: localStorage.getItem('token') || ''
+        token: localStorage.getItem('token') || '',
+        email: localStorage.getItem('email') || ''
     })
 
     return (

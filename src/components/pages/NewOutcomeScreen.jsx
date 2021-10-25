@@ -1,6 +1,11 @@
 import styled from 'styled-components'
 import InfoInput from '../utils/InfoInput'
 import CenteredButton from '../utils/CenteredButton'
+import { useState, useContext } from 'react'
+import { postOutcome } from '../../services/services'
+import UserContext from '../contexts/UserContext'
+import { useHistory } from 'react-router'
+import dayjs from 'dayjs'
 
 const Container = styled.div`
     background-color: #8C11BE;
@@ -27,12 +32,34 @@ const ContainerTitle = styled.div`
 `
 
 export default () => {
+    const [value, setValue] = useState('')
+    const [description, setDescription] = useState('')
+    const { user } = useContext(UserContext)
+    const history = useHistory()
+
+    const addOutcome = () => {
+        
+        const body = {
+            value,
+            description,
+            date: dayjs().format('DD/MM'),
+            isIncome: false
+        }
+        postOutcome(body, user.token).then(res => {
+            
+        }).catch(res => {
+            console.log(res.status)
+        })
+
+        history.push('/')
+    }
+
     return (
         <Container>
             <ContainerTitle>Nova saída</ContainerTitle>
-            <InfoInput placeholder={'Valor'}/>
-            <InfoInput placeholder={'Descrição'}/>
-            <CenteredButton text={'Salvar saída'} to={'/'}/>
+            <InfoInput value={value} onChange={e => setValue(e.target.value)} placeholder={'Valor'}/>
+            <InfoInput value={description} onChange={e => setDescription(e.target.value)} placeholder={'Descrição'}/>
+            <CenteredButton text={'Salvar saída'} onClick={addOutcome}/>
         </Container>
     )
 }
