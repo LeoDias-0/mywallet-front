@@ -1,11 +1,13 @@
 import styled from 'styled-components'
 import InfoInput from '../utils/InfoInput'
 import CenteredButton from '../utils/CenteredButton'
-import { useState, useContext } from 'react'
-import { postIncome } from '../../services/services'
+import { useState, useContext, useEffect  } from 'react'
+import { getRegisters, postIncome } from '../../services/services'
 import UserContext from '../contexts/UserContext'
 import { useHistory } from 'react-router'
 import dayjs from 'dayjs'
+import validateNewEntry from '../../validations/validateNewEntry'
+import Swal from 'sweetalert2'
 
 const Container = styled.div`
     background-color: #8C11BE;
@@ -37,22 +39,49 @@ export default () => {
     const { user } = useContext(UserContext)
     const history = useHistory()
 
+    const showErrorMessage = text => {
+        Swal.fire({
+            title: 'Erro!',
+            text,
+            icon: 'error',
+            confirmButtonText: 'Ok'
+        })
+    }
+
     const addIncome = () => {
         
-        const body = {
+        let body = {
+            value,
+            description
+        }
+
+        const validationsErrorsDetails = validateNewEntry.validate(body).error?.details
+        if (validationsErrorsDetails) return showErrorMessage('Informações incorretas.')
+
+        body = {
             value,
             description,
             date: dayjs().format('DD/MM'),
             isIncome: true
         }
         postIncome(body, user.token).then(res => {
-            
+            history.push('/')
         }).catch(res => {
             console.log(res.status)
+            showErrorMessage('Houve um erro interno, por favor atualize a página.')
         })
-    
-        history.push('/')
+        
     }
+
+    useEffect(() => {
+        const { token } = user
+
+        getRegisters(token).catch(res => {
+            const status = res.response.status
+            if (status === 405) return history.push('login-in')
+        })
+
+    }, [])
 
     return (
         <Container>

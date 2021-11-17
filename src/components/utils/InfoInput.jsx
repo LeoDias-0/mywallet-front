@@ -23,8 +23,12 @@ const ContainerInput = styled.input`
 
 
 
-export default ({ placeholder, onChange }) => {
+export default ({ value, placeholder, onChange }) => {
     return (
-        <ContainerInput onChange={onChange} placeholder={placeholder}/>
+        <ContainerInput
+            value={value}
+            onChange={onChange}
+            placeholder={placeholder}
+            />
     )
 }

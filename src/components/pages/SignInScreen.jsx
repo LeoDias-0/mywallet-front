@@ -7,6 +7,8 @@ import { useState, useContext } from 'react'
 import { postSignIn } from '../../services/services'
 import UserContext from '../contexts/UserContext'
 import { useHistory } from 'react-router'
+import validateSign from '../../validations/validateSign'
+import Swal from 'sweetalert2'
 
 export default () => {
     const [name, setName] = useState('')
@@ -17,18 +19,39 @@ export default () => {
     const history = useHistory()
 
     const signIn = () => {
-        if (password !== confirmPassword) {
-            alert('Digite a mesma senha nos campos abaixo!')
-            return
+
+        const body = {
+            name,
+            email,
+            password
         }
 
-        postSignIn(name, email, password).then(res => {
+        const showErrorMessage = text => {
+            Swal.fire({
+                title: 'Erro!',
+                text,
+                icon: 'error',
+                confirmButtonText: 'Ok'
+            })
+        }
 
+        if (password !== confirmPassword) {
+            return showErrorMessage('Digite a mesma senha nos campos abaixo!')
+        }
+
+        const validationsErrorsDetails = validateSign.validate(body).error?.details
+        if (validationsErrorsDetails) return showErrorMessage('Dados inválidos!')
+
+        postSignIn(name, email, password).then(() => {
             history.push('/login-in')
         }).catch(res => {
-            console.log(res)
-            alert('Não foi possível efetuar o cadastro, atualize a página e tente novamente!')
-            return
+            
+            const messages = {
+                500: 'Houve um erro interno, tente novamente mais tarde.',
+                409: 'E-mail já cadastrado!',
+                422: 'Dados inválidos'
+            }
+            return showErrorMessage(messages[res.response.status])
         })
     }
 

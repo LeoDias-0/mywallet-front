@@ -40,7 +40,7 @@ const ValueContainer = styled.div`
     right: 12px;
 `
 
-export default ({ date, description, value, isIncome }) => {
+const Register = ({ date, description, value, isIncome }) => {
     return (
         <Container>
             <DateContainer>
@@ -50,8 +50,10 @@ export default ({ date, description, value, isIncome }) => {
                 {description}
             </DescriptionContainer>
             <ValueContainer isIncome={isIncome}>
-                {value}
+                {value.toFixed(2)}
             </ValueContainer>
         </Container>
     )
 }
+
+export default Register

@@ -7,19 +7,34 @@ import { useEffect, useState, useContext } from 'react'
 import { postLogin } from '../../services/services'
 import UserContext from '../contexts/UserContext'
 import { useHistory } from 'react-router'
+import Swal from 'sweetalert2'
 
-export default () => {
+const LoginInScreen = () => {
     const [email, setEmail] = useState(localStorage.getItem('email') || '')
     const [password, setPassword] = useState(localStorage.getItem('password') || '')
     const { setUser } = useContext(UserContext)
     const history = useHistory()
 
+    const showErrorMessage = text => {
+            Swal.fire({
+                title: 'Erro!',
+                text,
+                icon: 'error',
+                confirmButtonText: 'Ok'
+            })
+        }
+
+
     const login = () => {
 
         postLogin(email, password).then(res => {
-            // TODO: testar
-            console.log(res)
+
             const { name, token, email } = res.data
+
+            localStorage.setItem('name', name)
+            localStorage.setItem('token', token)
+            localStorage.setItem('email', email)
+            localStorage.setItem('password', password)
 
             setUser({
                 name: name,
@@ -27,17 +42,15 @@ export default () => {
                 email: email
             })
 
-            localStorage.setItem('name', name)
-            localStorage.setItem('token', token)
-            localStorage.setItem('email', email)
-            localStorage.setItem('password', password)
-
-            console.log('Logou com sucesso')
-            history.push('/')
+            // history.push('/')
+            window.location = '/'
         }).catch(res => {
-            console.log(res)
-            alert('Não foi possível efetuar o login, atualize a página e tente novamente!')
-            return
+            const messages = {
+                500: 'Houve um erro interno, tente novamente mais tarde.',
+                409: 'E-mail não cadastrado!',
+                422: 'Dados inválidos'
+            }
+            return showErrorMessage(messages[res.response.status])
         })
         
     }
@@ -54,12 +67,12 @@ export default () => {
                 placeholder={'E-mail'}
                 value={email}
                 onChange={e => setEmail(e.target.value)}
-                type="email" />
+                type={"email"} />
             <InfoInput
                 placeholder={'Senha'}
                 value={password}
                 onChange={e => setPassword(e.target.value)}
-                type="password" />
+                type={"password"} />
             <CenteredButton
                 onClick={login}
                 text={'Entrar'} />
@@ -67,3 +80,5 @@ export default () => {
         </Background>
     )
 }
+
+export default LoginInScreen

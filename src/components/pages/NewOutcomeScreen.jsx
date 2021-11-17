@@ -1,11 +1,13 @@
 import styled from 'styled-components'
 import InfoInput from '../utils/InfoInput'
 import CenteredButton from '../utils/CenteredButton'
-import { useState, useContext } from 'react'
-import { postOutcome } from '../../services/services'
+import { useState, useContext, useEffect } from 'react'
+import { getRegisters, postOutcome } from '../../services/services'
 import UserContext from '../contexts/UserContext'
 import { useHistory } from 'react-router'
 import dayjs from 'dayjs'
+import validateNewEntry from '../../validations/validateNewEntry'
+import Swal from 'sweetalert2'
 
 const Container = styled.div`
     background-color: #8C11BE;
@@ -36,29 +38,65 @@ export default () => {
     const [description, setDescription] = useState('')
     const { user } = useContext(UserContext)
     const history = useHistory()
+    
+
+    const showErrorMessage = text => {
+        Swal.fire({
+            title: 'Erro!',
+            text,
+            icon: 'error',
+            confirmButtonText: 'Ok'
+        })
+    }
 
     const addOutcome = () => {
+
+        let body = {
+            value,
+            description
+        }
+
+        const validationsErrorsDetails = validateNewEntry.validate(body).error?.details
+        if (validationsErrorsDetails) return showErrorMessage('Informações incorretas.')
         
-        const body = {
+        body = {
             value,
             description,
             date: dayjs().format('DD/MM'),
             isIncome: false
         }
         postOutcome(body, user.token).then(res => {
-            
+            history.push('/')
         }).catch(res => {
             console.log(res.status)
+            showErrorMessage('Houve um erro interno, por favor atualize a página.')
+        })
+    }
+
+    useEffect(() => {
+        const { token } = user
+
+        getRegisters(token).catch(res => {
+            const status = res.response.status
+            if (status === 405) return history.push('login-in')
         })
 
-        history.push('/')
-    }
+    }, [])
+
 
     return (
         <Container>
             <ContainerTitle>Nova saída</ContainerTitle>
-            <InfoInput value={value} onChange={e => setValue(e.target.value)} placeholder={'Valor'}/>
-            <InfoInput value={description} onChange={e => setDescription(e.target.value)} placeholder={'Descrição'}/>
+            <InfoInput
+                value={value}
+                onChange={e => setValue(e.target.value)}
+                placeholder={'Valor'}
+                />
+            <InfoInput
+                value={description}
+                onChange={e => setDescription(e.target.value)}
+                placeholder={'Descrição'}
+                />
             <CenteredButton text={'Salvar saída'} onClick={addOutcome}/>
         </Container>
     )

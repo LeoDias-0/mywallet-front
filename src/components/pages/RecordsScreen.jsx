@@ -5,8 +5,9 @@ import RegisterContainer from '../utils/RegisterContainer'
 import UserContext from '../contexts/UserContext'
 import { useContext } from 'react'
 
-export default () => {
+const RecordsScreen = () => {
     const { user } = useContext(UserContext)
+
     return (
         <Background>
             <TopBar userName={user.name} />
@@ -15,3 +16,5 @@ export default () => {
         </Background>
     )
 }
+
+export default RecordsScreen

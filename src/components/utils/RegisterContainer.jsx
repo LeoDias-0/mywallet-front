@@ -3,7 +3,7 @@ import styled from 'styled-components'
 import Register from './Register'
 import { getRegisters } from '../../services/services'
 import UserContext from '../contexts/UserContext'
-import { useHistory } from 'react-router'
+import { useHistory, useLocation } from 'react-router'
 
 const Container = styled.div`
     width: 100%;
@@ -57,31 +57,51 @@ const BalanceValue = styled.div`
     font-style: normal;
     font-weight: normal;
     font-size: 17px;
-    color: #03AC00;
+    color: ${({isPositive})=> isPositive ? '#03AC00': '#C70000'};
 `
 
-export default () => {
+const RegisterContainer = () => {
+    const { user, prevRegister } = useContext(UserContext)
     const [balance, setBalance] = useState(0)
-    const [registers, setRegisters] = useState([])
+    const [registers, setRegisters] = useState([...prevRegister])
     const history = useHistory()
+    
+    
+    useEffect(() => {
 
-    const { user } = useContext(UserContext)
+        getRegisters(user.token).then(res => {
+            const list = res.data.rows.map(a => {
+                a.value = Number(a.value)
+                return a
+            })
+            
+            setRegisters(list)
+            
+        }).catch(res => {
+            const status = res.response.status
+            if (status === 405) return history.push('/login-in')
+        })
+    }, [])
 
     useEffect(() => {
-        getRegisters(user.token).then(res => {
-
-            let sum = 0
-            res.data.rows.map(a => sum += Number(a))
-            setBalance(sum.toFixed(2))
-            setRegisters(res.data.rows.map(a => Number(a).toFixed(2)))
-        }).catch(res => {
-            console.log(res)
+        let sum = 0
+        registers.map(a => {
+            sum += a.isIncome ? Number(a.value) : -Number(a.value)
         })
+        
+        setBalance(sum)
+
+        return () => setBalance(0)
     }, [registers])
 
 
+    const formatBalance = balance => {
+        if (Number(balance) < 0) return (-balance).toFixed(2)
+        return balance.toFixed(2)
+    }
+
     return (
-        <Container registers={registers} >
+        <Container registers={registers}>
             {registers.length > 0 ?
                 registers.map((item, index) => <Register
                     key={index}
@@ -94,8 +114,10 @@ export default () => {
                 entrada ou saída</NoRegisters>}
             <BalanceContainer>
                 <BalanceTitle>SALDO</BalanceTitle>
-                <BalanceValue>{balance}</BalanceValue>
+                <BalanceValue isPositive={balance >= 0}>{formatBalance(balance)}</BalanceValue>
             </BalanceContainer>
         </Container>
     )
 }
+
+export default RegisterContainer
